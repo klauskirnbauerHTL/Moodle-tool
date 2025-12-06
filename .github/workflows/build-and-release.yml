@@ -120,19 +120,8 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         name: ${{ matrix.artifact_name }}
-        path: |
-          moodle-tool-macos.zip
+        path: moodle-tool-macos.zip
         retention-days: 30
-        if-no-files-found: warn
-    
-    - name: Upload DMG artifact (macOS)
-      if: runner.os == 'macOS'
-      uses: actions/upload-artifact@v4
-      with:
-        name: moodle-tool-macos-dmg
-        path: moodle-tool-macos.dmg
-        retention-days: 30
-        if-no-files-found: warn
     
     - name: Upload artifacts (Windows)
       if: runner.os == 'Windows'
@@ -141,16 +130,12 @@ jobs:
         name: ${{ matrix.artifact_name }}
         path: moodle-tool-windows.zip
         retention-days: 30
-        if-no-files-found: error
     
     - name: Upload Release Assets (macOS)
       if: startsWith(github.ref, 'refs/tags/v') && runner.os == 'macOS'
       uses: softprops/action-gh-release@v1
       with:
-        files: |
-          moodle-tool-macos.zip
-          moodle-tool-macos.dmg
-        fail_on_unmatched_files: false
+        files: moodle-tool-macos.zip
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     
