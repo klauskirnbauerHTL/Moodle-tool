@@ -9,6 +9,10 @@ on:
     branches: [ main, V1.0 ]
   workflow_dispatch:
 
+permissions:
+  contents: write
+  packages: write
+
 jobs:
   test:
     name: Test Python Application
