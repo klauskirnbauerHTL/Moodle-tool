@@ -75,7 +75,6 @@ jobs:
         pyinstaller --name="MoodleTool" \
           --windowed \
           --onefile \
-          --icon=icon.icns \
           --add-data ".:." \
           main.py
     
@@ -88,16 +87,20 @@ jobs:
       if: runner.os == 'macOS'
       run: |
         cd dist
-        mkdir -p MoodleTool
-        cp -r MoodleTool.app MoodleTool/
-        hdiutil create -volname "Moodle MCQ Tool" -srcfolder MoodleTool -ov -format UDZO MoodleTool.dmg
+        if [ -d "MoodleTool.app" ]; then
+          mkdir -p MoodleTool
+          cp -r MoodleTool.app MoodleTool/
+          hdiutil create -volname "Moodle MCQ Tool" -srcfolder MoodleTool -ov -format UDZO MoodleTool.dmg
+        fi
         cd ..
     
     - name: Package artifacts (macOS)
       if: runner.os == 'macOS'
       run: |
         cd dist
-        zip -r ../moodle-tool-macos.zip MoodleTool.app
+        if [ -d "MoodleTool.app" ]; then
+          zip -r ../moodle-tool-macos.zip MoodleTool.app
+        fi
         if [ -f MoodleTool.dmg ]; then
           mv MoodleTool.dmg ../moodle-tool-macos.dmg
         fi
