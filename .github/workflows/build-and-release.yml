@@ -88,6 +88,7 @@ jobs:
       run: |
         cd dist
         if [ -d "MoodleTool.app" ]; then
+          rm -rf MoodleTool
           mkdir -p MoodleTool
           cp -r MoodleTool.app MoodleTool/
           hdiutil create -volname "Moodle MCQ Tool" -srcfolder MoodleTool -ov -format UDZO MoodleTool.dmg
