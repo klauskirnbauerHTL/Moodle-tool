@@ -59,6 +59,9 @@ jobs:
           - os: windows-latest
             artifact_name: moodle-tool-windows
             asset_name: moodle-tool-windows.zip
+          - os: ubuntu-latest
+            artifact_name: moodle-tool-linux
+            asset_name: moodle-tool-linux.tar.gz
     
     steps:
     - uses: actions/checkout@v4
@@ -86,6 +89,15 @@ jobs:
       if: runner.os == 'Windows'
       run: |
         pyinstaller --name="MoodleTool" --windowed --onefile --add-data ".;." main.py
+    
+    - name: Build with PyInstaller (Linux)
+      if: runner.os == 'Linux'
+      run: |
+        pyinstaller --name="MoodleTool" \
+          --windowed \
+          --onefile \
+          --add-data ".:." \
+          main.py
     
     - name: Create macOS DMG (optional)
       if: runner.os == 'macOS'
@@ -119,6 +131,13 @@ jobs:
         cd ..
       shell: pwsh
     
+    - name: Package artifacts (Linux)
+      if: runner.os == 'Linux'
+      run: |
+        cd dist
+        tar -czf ../moodle-tool-linux.tar.gz MoodleTool
+        cd ..
+    
     - name: Upload artifacts (macOS)
       if: runner.os == 'macOS'
       uses: actions/upload-artifact@v4
@@ -135,6 +154,14 @@ jobs:
         path: moodle-tool-windows.zip
         retention-days: 30
     
+    - name: Upload artifacts (Linux)
+      if: runner.os == 'Linux'
+      uses: actions/upload-artifact@v4
+      with:
+        name: ${{ matrix.artifact_name }}
+        path: moodle-tool-linux.tar.gz
+        retention-days: 30
+    
     - name: Upload Release Assets (macOS)
       if: startsWith(github.ref, 'refs/tags/v') && runner.os == 'macOS'
       uses: softprops/action-gh-release@v1
@@ -148,5 +175,13 @@ jobs:
       uses: softprops/action-gh-release@v1
       with:
         files: moodle-tool-windows.zip
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    
+    - name: Upload Release Assets (Linux)
+      if: startsWith(github.ref, 'refs/tags/v') && runner.os == 'Linux'
+      uses: softprops/action-gh-release@v1
+      with:
+        files: moodle-tool-linux.tar.gz
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
