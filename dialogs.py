@@ -4,7 +4,7 @@ from PyQt6.QtWidgets import (
     QDialog, QLineEdit, QTextEdit, QCheckBox,
     QDoubleSpinBox, QPushButton, QMessageBox, QFileDialog,
     QListWidget, QLabel, QVBoxLayout, QHBoxLayout, QGridLayout,
-    QScrollArea, QWidget
+    QScrollArea, QWidget, QComboBox
 )
 from PyQt6.QtCore import Qt
 
@@ -58,7 +58,7 @@ class QuestionDialog(QDialog):
         question_layout.addWidget(self.question_edit)
         main_layout.addLayout(question_layout)
 
-        # PUNKTE + SINGLE CHOICE
+        # PUNKTE + FRAGETYP + SINGLE CHOICE
         options_layout = QHBoxLayout()
         options_layout.setSpacing(20)
         
@@ -75,6 +75,22 @@ class QuestionDialog(QDialog):
         self.points_spin.setMaximumWidth(120)
         self.points_spin.setStyleSheet("padding: 8px; font-size: 15px;")
         options_layout.addWidget(self.points_spin)
+        
+        options_layout.addSpacing(30)
+        
+        # Fragetyp Dropdown
+        type_label = QLabel("📋 Fragetyp:")
+        type_label.setStyleSheet("font-size: 15px; font-weight: bold;")
+        options_layout.addWidget(type_label)
+        
+        self.question_type_combo = QComboBox()
+        self.question_type_combo.addItems(["Multiple Choice", "Freitext (Essay)", "Kurzantwort"])
+        self.question_type_combo.setMinimumHeight(40)
+        self.question_type_combo.setMaximumHeight(50)
+        self.question_type_combo.setMinimumWidth(180)
+        self.question_type_combo.setStyleSheet("padding: 8px; font-size: 15px;")
+        self.question_type_combo.currentIndexChanged.connect(self.on_question_type_changed)
+        options_layout.addWidget(self.question_type_combo)
         
         options_layout.addSpacing(30)
         
@@ -116,8 +132,10 @@ class QuestionDialog(QDialog):
         answers_title = QLabel("💬 Antworten:")
         answers_title.setStyleSheet("font-size: 16px; font-weight: bold; margin-top: 15px; margin-bottom: 8px;")
         main_layout.addWidget(answers_title)
+        self.answers_title = answers_title
         
         self.answers = []
+        self.answer_containers = []
         for i in range(5):
             # Vertikales Layout für jede Antwort
             answer_container = QVBoxLayout()
@@ -144,7 +162,12 @@ class QuestionDialog(QDialog):
             answer_edit.setPlaceholderText(f"Antwort {i+1} hier eingeben (mehrzeilig, HTML möglich)...")
             answer_container.addWidget(answer_edit)
             
-            main_layout.addLayout(answer_container)
+            # Widget Container für Ein/Ausblenden
+            container_widget = QWidget()
+            container_widget.setLayout(answer_container)
+            main_layout.addWidget(container_widget)
+            
+            self.answer_containers.append(container_widget)
             self.answers.extend([answer_edit, correct_cb])
 
         # SPEICHERN BUTTON
@@ -185,6 +208,18 @@ class QuestionDialog(QDialog):
         dialog_layout.addWidget(scroll_area)
         self.setLayout(dialog_layout)
 
+    def on_question_type_changed(self, index):
+        """Blendet Antwortfelder aus/ein je nach Fragetyp"""
+        is_mc = (index == 0)  # Multiple Choice
+        
+        # Single Choice Checkbox nur bei MC anzeigen
+        self.single_cb.setVisible(is_mc)
+        
+        # Antworten-Titel und Container anzeigen/verstecken
+        self.answers_title.setVisible(is_mc)
+        for container in self.answer_containers:
+            container.setVisible(is_mc)
+
     def get_tags_string(self):
         tags = []
         for tag_edit in self.tag_edits:
@@ -196,7 +231,7 @@ class QuestionDialog(QDialog):
     def load_question(self):
         conn = sqlite3.connect(self.db_path)
         c = conn.cursor()
-        c.execute("SELECT title, questiontext, single, tags, points FROM questions WHERE id=?", (self.question_id,))
+        c.execute("SELECT title, questiontext, single, tags, points, question_type FROM questions WHERE id=?", (self.question_id,))
         row = c.fetchone()
         if not row:
             conn.close()
@@ -205,6 +240,15 @@ class QuestionDialog(QDialog):
         self.question_edit.setPlainText(row[1])
         self.single_cb.setChecked(row[2] == 1)
         self.points_spin.setValue(row[4])
+        
+        # Fragetyp laden
+        question_type = row[5] if len(row) > 5 else 'multichoice'
+        if question_type == 'essay':
+            self.question_type_combo.setCurrentIndex(1)
+        elif question_type == 'shortanswer':
+            self.question_type_combo.setCurrentIndex(2)
+        else:
+            self.question_type_combo.setCurrentIndex(0)
         
         tags_str = row[3]
         if tags_str:
@@ -226,11 +270,22 @@ class QuestionDialog(QDialog):
             QMessageBox.warning(self, "Fehler", "Titel erforderlich!")
             return
         
+        # Fragetyp bestimmen
+        question_type_index = self.question_type_combo.currentIndex()
+        if question_type_index == 1:
+            question_type = 'essay'
+        elif question_type_index == 2:
+            question_type = 'shortanswer'
+        else:
+            question_type = 'multichoice'
+        
         answers = []
-        for i in range(0, len(self.answers), 2):
-            answer_text = self.answers[i].toPlainText()
-            is_correct = 1 if self.answers[i + 1].isChecked() else 0
-            answers.append((answer_text, is_correct))
+        # Nur Antworten speichern wenn Multiple Choice
+        if question_type == 'multichoice':
+            for i in range(0, len(self.answers), 2):
+                answer_text = self.answers[i].toPlainText()
+                is_correct = 1 if self.answers[i + 1].isChecked() else 0
+                answers.append((answer_text, is_correct))
         
         conn = sqlite3.connect(self.db_path)
         c = conn.cursor()
@@ -238,17 +293,17 @@ class QuestionDialog(QDialog):
         
         if self.question_id:
             c.execute(
-                """UPDATE questions SET title=?, questiontext=?, single=?, tags=?, points=? WHERE id=?""",
+                """UPDATE questions SET title=?, questiontext=?, single=?, tags=?, points=?, question_type=? WHERE id=?""",
                 (self.title_edit.text().strip(), self.question_edit.toPlainText().strip(),
-                 1 if self.single_cb.isChecked() else 0, tags, self.points_spin.value(), self.question_id)
+                 1 if self.single_cb.isChecked() else 0, tags, self.points_spin.value(), question_type, self.question_id)
             )
             c.execute("DELETE FROM answers WHERE question_id=?", (self.question_id,))
             qid = self.question_id
         else:
             c.execute(
-                "INSERT INTO questions (title, questiontext, single, tags, points) VALUES (?, ?, ?, ?, ?)",
+                "INSERT INTO questions (title, questiontext, single, tags, points, question_type) VALUES (?, ?, ?, ?, ?, ?)",
                 (self.title_edit.text().strip(), self.question_edit.toPlainText().strip(),
-                 1 if self.single_cb.isChecked() else 0, tags, self.points_spin.value())
+                 1 if self.single_cb.isChecked() else 0, tags, self.points_spin.value(), question_type)
             )
             qid = c.lastrowid
         

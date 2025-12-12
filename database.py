@@ -6,14 +6,25 @@ def init_database_schema(db_path):
     """Erstellt die Tabellen falls nicht vorhanden"""
     conn = sqlite3.connect(db_path)
     c = conn.cursor()
+    
+    # Prüfen ob question_type Spalte existiert
+    c.execute("PRAGMA table_info(questions)")
+    columns = [column[1] for column in c.fetchall()]
+    
     c.execute('''CREATE TABLE IF NOT EXISTS questions (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         title TEXT NOT NULL,
         questiontext TEXT NOT NULL,
         single INTEGER DEFAULT 1,
         tags TEXT DEFAULT '',
-        points REAL DEFAULT 1.0
+        points REAL DEFAULT 1.0,
+        question_type TEXT DEFAULT 'multichoice'
     )''')
+    
+    # Wenn Spalte nicht existiert, hinzufügen (Migration)
+    if 'question_type' not in columns and len(columns) > 0:
+        c.execute("ALTER TABLE questions ADD COLUMN question_type TEXT DEFAULT 'multichoice'")
+    
     c.execute('''CREATE TABLE IF NOT EXISTS answers (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         question_id INTEGER NOT NULL,
