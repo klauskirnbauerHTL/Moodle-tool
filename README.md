@@ -38,8 +38,28 @@ Für Windows und macOS stehen vorkompilierte ausführbare Dateien zur Verfügung
 
 👉 [Releases herunterladen](https://github.com/klauskirnbauerHTL/moodle-tool/releases)
 
-- **macOS**: `.app` Bundle oder `.dmg` Installer
+- **macOS**: `.zip` mit Binary (siehe macOS Sicherheitshinweis unten)
 - **Windows**: `.exe` Datei
+
+### ⚠️ macOS Sicherheitshinweis
+
+Da die App nicht von Apple signiert ist, müssen Sie beim ersten Start:
+
+**Variante 1 - Rechtsklick:**
+1. Rechtsklick (oder Ctrl+Klick) auf `MoodleTool`
+2. "Öffnen" wählen
+3. Im Dialog "Öffnen" bestätigen
+
+**Variante 2 - Terminal:**
+```bash
+xattr -cr MoodleTool
+./MoodleTool
+```
+
+**Variante 3 - Systemeinstellungen:**
+1. Versuchen Sie die App zu öffnen
+2. Systemeinstellungen → Datenschutz & Sicherheit
+3. "Trotzdem öffnen" klicken
 
 ## 🎯 Verwendung
 
