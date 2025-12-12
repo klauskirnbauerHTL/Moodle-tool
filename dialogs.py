@@ -84,7 +84,7 @@ class QuestionDialog(QDialog):
         options_layout.addWidget(type_label)
         
         self.question_type_combo = QComboBox()
-        self.question_type_combo.addItems(["Multiple Choice", "Freitext (Essay)", "Kurzantwort"])
+        self.question_type_combo.addItems(["Multiple Choice (Alles oder Nichts)", "Freitext (Essay)", "Kurzantwort"])
         self.question_type_combo.setMinimumHeight(40)
         self.question_type_combo.setMaximumHeight(50)
         self.question_type_combo.setMinimumWidth(180)
