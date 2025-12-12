@@ -39,17 +39,12 @@ def export_to_moodle_xml(db_path, question_ids, filename):
             ET.SubElement(question, 'shuffleanswers').text = 'true'
             ET.SubElement(question, 'answernumbering').text = 'abc'
             
-            # All-or-Nothing Bewertung bei Multiple Choice (nicht Single Choice)
-            # Bei Single Choice: keine spezielle Einstellung nötig
-            # Bei Multiple Choice: alle richtigen Antworten müssen gewählt werden
+            # All-or-Nothing für Multiple Choice: penalty für falsche Antworten
             if single == 0:  # Multiple Choice
-                # Zähle richtige Antworten
-                c.execute('SELECT COUNT(*) FROM answers WHERE question_id=? AND is_correct=1', (qid,))
-                correct_count = c.fetchone()[0]
-                
-                # Setze Bewertungsmethode auf "All-or-Nothing" (korrekteste Variante für MC)
-                # Dies wird durch die Fractions erreicht: nur volle Punktzahl oder 0
-                pass  # Die Fractions werden unten entsprechend gesetzt
+                # Negative Bewertung verhindern
+                ET.SubElement(question, 'correctfeedback', format='html').text = '<text>Ihre Antwort ist richtig.</text>'
+                ET.SubElement(question, 'partiallycorrectfeedback', format='html').text = '<text>Ihre Antwort ist teilweise richtig.</text>'
+                ET.SubElement(question, 'incorrectfeedback', format='html').text = '<text>Ihre Antwort ist falsch.</text>'
         
         # Essay-spezifische Felder
         if question_type == 'essay':
@@ -78,18 +73,25 @@ def export_to_moodle_xml(db_path, question_ids, filename):
             c.execute('SELECT answertext, is_correct FROM answers WHERE question_id=?', (qid,))
             answers = c.fetchall()
             
-            # Bei Multiple Choice: All-or-Nothing - nur volle Punkte wenn ALLES korrekt
+            # Bei Multiple Choice: Berechne Fractions für All-or-Nothing
             if question_type == 'multichoice' and single == 0:
-                # Alle richtigen Antworten müssen gewählt werden UND keine falschen
-                # Dies erreichen wir durch: richtig = 100%, falsch = massive Negativpunkte
+                # Zähle richtige und falsche Antworten
+                correct_count = sum(1 for a in answers if a[1] == 1)
+                incorrect_count = sum(1 for a in answers if a[1] == 0 and a[0].strip())
+                
+                # All-or-Nothing: Jede richtige = positiver Anteil, jede falsche = negativer Anteil
+                # sodass nur bei 100% richtiger Auswahl die volle Punktzahl erreicht wird
                 for answertext, is_correct in answers:
+                    if not answertext.strip():
+                        continue
+                    
                     if is_correct == 1:
-                        # Richtige Antworten: 100% (nicht geteilt!)
-                        fraction = '100'
+                        # Jede richtige Antwort trägt ihren Teil bei (z.B. 50% bei 2 richtigen)
+                        fraction = f'{100.0 / correct_count:.7g}' if correct_count > 0 else '100'
                     else:
-                        # Falsche Antworten: -100% pro falscher Auswahl
-                        # Dadurch wird bei einer einzigen falschen Auswahl die Gesamtpunktzahl negativ/0
-                        fraction = '-100'
+                        # Jede falsche Antwort zieht den gleichen Anteil ab
+                        # Bei einer falschen Auswahl wird damit die komplette Punktzahl zunichte gemacht
+                        fraction = f'{-100.0 / correct_count:.7g}' if correct_count > 0 else '-100'
                     
                     answer = ET.SubElement(question, 'answer', fraction=fraction, format='html')
                     ET.SubElement(answer, 'text').text = answertext
