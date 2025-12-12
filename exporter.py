@@ -78,18 +78,17 @@ def export_to_moodle_xml(db_path, question_ids, filename):
             c.execute('SELECT answertext, is_correct FROM answers WHERE question_id=?', (qid,))
             answers = c.fetchall()
             
-            # Bei Multiple Choice: All-or-Nothing durch negative Punkte für falsche Antworten
+            # Bei Multiple Choice: All-or-Nothing - nur volle Punkte wenn ALLES korrekt
             if question_type == 'multichoice' and single == 0:
-                # Zähle richtige Antworten
-                correct_answers = [a for a in answers if a[1] == 1]
-                num_correct = len(correct_answers)
-                
+                # Alle richtigen Antworten müssen gewählt werden UND keine falschen
+                # Dies erreichen wir durch: richtig = 100%, falsch = massive Negativpunkte
                 for answertext, is_correct in answers:
                     if is_correct == 1:
-                        # Richtige Antworten: Anteil an 100% (z.B. bei 2 richtigen: je 50%)
-                        fraction = str(100.0 / num_correct) if num_correct > 0 else '100'
+                        # Richtige Antworten: 100% (nicht geteilt!)
+                        fraction = '100'
                     else:
-                        # Falsche Antworten: -100% damit nur "alles richtig" volle Punktzahl gibt
+                        # Falsche Antworten: -100% pro falscher Auswahl
+                        # Dadurch wird bei einer einzigen falschen Auswahl die Gesamtpunktzahl negativ/0
                         fraction = '-100'
                     
                     answer = ET.SubElement(question, 'answer', fraction=fraction, format='html')
