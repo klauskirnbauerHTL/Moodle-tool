@@ -39,12 +39,16 @@ def export_to_moodle_xml(db_path, question_ids, filename):
             ET.SubElement(question, 'shuffleanswers').text = 'true'
             ET.SubElement(question, 'answernumbering').text = 'abc'
             
-            # All-or-Nothing für Multiple Choice: penalty für falsche Antworten
+            # All-or-Nothing Bewertungsmethode bei Multiple Choice
             if single == 0:  # Multiple Choice
-                # Negative Bewertung verhindern
-                ET.SubElement(question, 'correctfeedback', format='html').text = '<text>Ihre Antwort ist richtig.</text>'
-                ET.SubElement(question, 'partiallycorrectfeedback', format='html').text = '<text>Ihre Antwort ist teilweise richtig.</text>'
-                ET.SubElement(question, 'incorrectfeedback', format='html').text = '<text>Ihre Antwort ist falsch.</text>'
+                # Setze scoring method auf "all-or-nothing" (mcq_scoring_method)
+                # Dies ist die korrekte Moodle-Einstellung für "alle oder nichts"
+                ET.SubElement(question, 'shownumcorrect')  # Leeres Element
+            
+            # Feedback
+            ET.SubElement(question, 'correctfeedback', format='html').text = '<text>Ihre Antwort ist richtig.</text>'
+            ET.SubElement(question, 'partiallycorrectfeedback', format='html').text = '<text>Ihre Antwort ist teilweise richtig.</text>'
+            ET.SubElement(question, 'incorrectfeedback', format='html').text = '<text>Ihre Antwort ist falsch.</text>'
         
         # Essay-spezifische Felder
         if question_type == 'essay':
@@ -73,31 +77,31 @@ def export_to_moodle_xml(db_path, question_ids, filename):
             c.execute('SELECT answertext, is_correct FROM answers WHERE question_id=?', (qid,))
             answers = c.fetchall()
             
-            # Bei Multiple Choice: Berechne Fractions für All-or-Nothing
+            # Bei Multiple Choice mit All-or-Nothing
             if question_type == 'multichoice' and single == 0:
-                # Zähle richtige und falsche Antworten
+                # Zähle richtige Antworten
                 correct_count = sum(1 for a in answers if a[1] == 1)
-                incorrect_count = sum(1 for a in answers if a[1] == 0 and a[0].strip())
                 
-                # All-or-Nothing: Jede richtige = positiver Anteil, jede falsche = negativer Anteil
-                # sodass nur bei 100% richtiger Auswahl die volle Punktzahl erreicht wird
+                # All-or-Nothing: nur richtige Antworten bekommen 100%, alle anderen 0%
+                # Nur wenn ALLE richtigen ausgewählt sind UND KEINE falschen, gibt es Punkte
                 for answertext, is_correct in answers:
                     if not answertext.strip():
                         continue
                     
-                    if is_correct == 1:
-                        # Jede richtige Antwort trägt ihren Teil bei (z.B. 50% bei 2 richtigen)
-                        fraction = f'{100.0 / correct_count:.7g}' if correct_count > 0 else '100'
-                    else:
-                        # Jede falsche Antwort zieht den gleichen Anteil ab
-                        # Bei einer falschen Auswahl wird damit die komplette Punktzahl zunichte gemacht
-                        fraction = f'{-100.0 / correct_count:.7g}' if correct_count > 0 else '-100'
-                    
+                    answer = ET.SubElement(question, 'answer', fraction=('100' if is_correct == 1 else '0'), format='html')
+                    ET.SubElement(answer, 'text').text = answertext
+                    ET.SubElement(answer, 'feedback', format='html').text = ''
+            
+            # Bei Single Choice oder Shortanswer: normale Bewertung
+            elif question_type == 'multichoice' and single == 1:
+                for answertext, is_correct in answers:
+                    fraction = '100' if is_correct == 1 else '0'
                     answer = ET.SubElement(question, 'answer', fraction=fraction, format='html')
                     ET.SubElement(answer, 'text').text = answertext
                     ET.SubElement(answer, 'feedback', format='html').text = ''
+            
+            # Shortanswer: Standard-Bewertung
             else:
-                # Single Choice oder Shortanswer: Standard-Bewertung
                 for answertext, is_correct in answers:
                     fraction = '100' if is_correct == 1 else '0'
                     answer = ET.SubElement(question, 'answer', fraction=fraction, format='html')
