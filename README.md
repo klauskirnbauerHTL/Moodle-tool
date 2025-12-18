@@ -2,7 +2,7 @@
 
 Ein benutzerfreundliches Desktop-Tool zum Erstellen, Verwalten und Exportieren von Multiple-Choice-Fragen für Moodle.
 
-![Version](https://img.shields.io/badge/version-1.0.0-blue)
+![Version](https://img.shields.io/badge/version-1.1.0-blue)
 ![Python](https://img.shields.io/badge/python-3.9%2B-brightgreen)
 ![License](https://img.shields.io/badge/license-MIT-green)
 
@@ -13,6 +13,7 @@ Ein benutzerfreundliches Desktop-Tool zum Erstellen, Verwalten und Exportieren v
 - 🔍 **Live-Suche** - Durchsuchen Sie Fragen nach Titel, Tags oder Fragetext
 - 💾 **SQLite Datenbank** - Lokale Speicherung aller Fragen
 - 📤 **Moodle XML Export** - Direkter Export für Moodle-Import
+- 📄 **Word Export** - Exportieren Sie Fragen als professionelles 2-spaltiges Word-Dokument
 - ⚡ **Single/Multiple Choice** - Unterstützung für beide Fragetypen
 - 🖥️ **Vollbild-Optimiert** - Perfektes Layout auch im Vollbildmodus
 
@@ -24,7 +25,7 @@ Ein benutzerfreundliches Desktop-Tool zum Erstellen, Verwalten und Exportieren v
 
 ### Installation
 ```bash
-pip install PyQt6
+pip install PyQt6 python-docx
 ```
 
 ### Programm starten
@@ -79,9 +80,21 @@ xattr -cr MoodleTool
 - Klicken Sie auf "🗑️ Ausgewählte löschen"
 
 ### Moodle XML exportieren
-1. Klicken Sie auf "📤 moodle.xml exportieren"
-2. Die Datei wird im gleichen Ordner gespeichert
-3. Importieren Sie die XML-Datei in Moodle
+1. Wählen Sie eine oder mehrere Fragen aus
+2. Klicken Sie auf "📤 moodle.xml exportieren"
+3. Wählen Sie einen Speicherort
+4. Importieren Sie die XML-Datei in Moodle
+
+### Word-Dokument exportieren (NEU! 🎉)
+1. Wählen Sie eine oder mehrere Fragen aus
+2. Klicken Sie auf "📄 Word exportieren"
+3. Wählen Sie einen Speicherort
+4. Das Word-Dokument wird mit 2-spaltigem Layout erstellt:
+   - Professionelles Layout mit Checkboxen
+   - Jede Frage auf einer Seite
+   - Richtige Antworten sind grün markiert (zur Kontrolle)
+   - Tags und Punkteanzahl sind enthalten
+   - Kann direkt in Word, LibreOffice oder Google Docs geöffnet werden
 
 ### Suche verwenden
 - Geben Sie Text in die Suchleiste ein
@@ -134,6 +147,13 @@ pyinstaller MoodleTool.spec
 ```
 
 ## 📝 Changelog
+
+### Version 1.1.0 (18. Dezember 2025)
+- ✨ **NEU**: Word-Export Funktion mit 2-spaltigem Layout
+- 📄 Professionelle Word-Dokumente mit Checkboxen für Antworten
+- 🎨 Farbige Markierung richtiger Antworten (grün) zur Kontrolle
+- 📋 Übersichtliche Formatierung mit Titel, Punkten und Tags
+- 🔧 python-docx Dependency hinzugefügt
 
 ### Version 1.0.0 (6. Dezember 2025)
 - ✅ Vollbild-optimiertes Layout mit ScrollArea

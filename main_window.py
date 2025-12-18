@@ -10,7 +10,7 @@ from PyQt6.QtCore import Qt
 import sqlite3
 
 from dialogs import QuestionDialog, SettingsDialog
-from exporter import export_to_moodle_xml
+from exporter import export_to_moodle_xml, export_to_word
 from database import init_database_schema, get_questions_overview, import_moodle_xml
 
 
@@ -23,7 +23,7 @@ class MainWindow(QMainWindow):
         # 🖥️ VOLLBILD AUTOMATISCH
         self.setWindowState(Qt.WindowState.WindowMaximized)
         
-        self.setWindowTitle("Moodle MCQ Tool v2.5")
+        self.setWindowTitle("Moodle MCQ Tool v2.6")
         self.create_menu()
         self.setup_central_widget()
         self.refresh_table()
@@ -80,12 +80,18 @@ class MainWindow(QMainWindow):
         export_btn = QPushButton("📤 moodle.xml exportieren")
         export_btn.setMinimumHeight(45)
         export_btn.clicked.connect(self.export_xml)
+        
+        # WORD EXPORT BUTTON
+        export_word_btn = QPushButton("📄 Word exportieren")
+        export_word_btn.setMinimumHeight(45)
+        export_word_btn.clicked.connect(self.export_word)
 
         button_layout.addWidget(new_btn)
         button_layout.addWidget(refresh_btn)
         button_layout.addWidget(delete_btn)
         button_layout.addStretch()
         button_layout.addWidget(export_btn)
+        button_layout.addWidget(export_word_btn)
         layout.addLayout(button_layout)
 
         central.setLayout(layout)
@@ -285,6 +291,29 @@ class MainWindow(QMainWindow):
             try:
                 export_to_moodle_xml(self.db_path, question_ids, filename)
                 QMessageBox.information(self, "Erfolg", f"{len(question_ids)} Fragen exportiert!\n{filename}")
+            except Exception as e:
+                QMessageBox.critical(self, "Fehler", f"Export fehlgeschlagen:\n{str(e)}")
+
+    def export_word(self):
+        """Exportiert ausgewählte Fragen als Word-Dokument"""
+        selected_rows = set()
+        for i in range(self.table.rowCount()):
+            item = self.table.item(i, 0)
+            if item and self.table.item(i, 0).isSelected():
+                selected_rows.add(i)
+
+        if not selected_rows:
+            QMessageBox.warning(self, "Fehler", "Wähle mindestens eine Frage aus!")
+            return
+
+        question_ids = [int(self.table.item(row, 0).text()) for row in selected_rows]
+        filename, _ = QFileDialog.getSaveFileName(self, "Word-Dokument speichern", "test_fragen.docx", "Word Dokument (*.docx)")
+        if filename:
+            try:
+                export_to_word(self.db_path, question_ids, filename)
+                QMessageBox.information(self, "Erfolg", f"{len(question_ids)} Fragen als Word-Dokument exportiert!\n{filename}")
+            except ImportError:
+                QMessageBox.critical(self, "Fehler", "Das Modul 'python-docx' ist nicht installiert.\n\nBitte installieren Sie es mit:\npip install python-docx")
             except Exception as e:
                 QMessageBox.critical(self, "Fehler", f"Export fehlgeschlagen:\n{str(e)}")
 
