@@ -164,7 +164,7 @@ jobs:
     
     - name: Upload Release Assets (macOS)
       if: startsWith(github.ref, 'refs/tags/v') && runner.os == 'macOS'
-      uses: softprops/action-gh-release@v1
+      uses: softprops/action-gh-release@v2
       with:
         files: moodle-tool-macos.zip
       env:
@@ -172,7 +172,7 @@ jobs:
     
     - name: Upload Release Assets (Windows)
       if: startsWith(github.ref, 'refs/tags/v') && runner.os == 'Windows'
-      uses: softprops/action-gh-release@v1
+      uses: softprops/action-gh-release@v2
       with:
         files: moodle-tool-windows.zip
       env:
@@ -180,7 +180,7 @@ jobs:
     
     - name: Upload Release Assets (Linux)
       if: startsWith(github.ref, 'refs/tags/v') && runner.os == 'Linux'
-      uses: softprops/action-gh-release@v1
+      uses: softprops/action-gh-release@v2
       with:
         files: moodle-tool-linux.tar.gz
       env:
