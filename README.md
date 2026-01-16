@@ -148,6 +148,13 @@ pyinstaller MoodleTool.spec
 
 ## 📝 Changelog
 
+### Version 2.9 (16. Januar 2026)
+- 🔧 **FIX**: Icon wird jetzt korrekt in macOS und Windows angezeigt
+- 💿 **NEU**: DMG-Installer für macOS mit Drag&Drop Installation
+- 🛠️ Pipeline verwendet jetzt MoodleTool.spec für konsistente Builds
+- 📦 create_dmg.sh Script für lokale DMG-Erstellung
+- ✨ Plattform-spezifische Icon-Auswahl optimiert
+
 ### Version 2.8 (16. Januar 2026)
 - 🎨 **NEU**: Programm-Icons für alle Plattformen
 - 🪟 Windows Icon (.ico) mit mehreren Auflösungen

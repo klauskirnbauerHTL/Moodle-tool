@@ -23,7 +23,7 @@ class MainWindow(QMainWindow):
         # 🖥️ VOLLBILD AUTOMATISCH
         self.setWindowState(Qt.WindowState.WindowMaximized)
         
-        self.setWindowTitle("Moodle MCQ Tool v2.8")
+        self.setWindowTitle("Moodle MCQ Tool v2.9")
         self.create_menu()
         self.setup_central_widget()
         self.refresh_table()
@@ -228,7 +228,7 @@ class MainWindow(QMainWindow):
             if new_db_text != "Keine ausgewählt":
                 self.db_path = new_db_text
                 init_database_schema(self.db_path)
-                self.setWindowTitle(f"Moodle MCQ Tool v2.8 - DB: {os.path.basename(self.db_path)}")
+                self.setWindowTitle(f"Moodle MCQ Tool v2.9 - DB: {os.path.basename(self.db_path)}")
                 self.refresh_table()
 
     def import_moodle_xml(self):

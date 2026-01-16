@@ -1,7 +1,18 @@
 # PyInstaller Spec-Datei für erweiterte Build-Konfiguration
 # -*- mode: python ; coding: utf-8 -*-
 
+import sys
+import os
+
 block_cipher = None
+
+# Plattform-spezifisches Icon
+icon_file = None
+if sys.platform == 'darwin':
+    icon_file = 'icon.icns'
+elif sys.platform == 'win32':
+    icon_file = 'icon.ico'
+# Linux verwendet kein Icon in der EXE
 
 a = Analysis(
     ['main.py'],
@@ -50,18 +61,19 @@ exe = EXE(
     target_arch=None,
     codesign_identity=None,
     entitlements_file=None,
-    icon='icon.ico',  # Windows Icon
+    icon=icon_file,
 )
 
-# macOS App Bundle
-app = BUNDLE(
-    exe,
-    name='MoodleTool.app',
-    icon='icon.icns',  # macOS Icon
-    bundle_identifier='at.htlpinkafeld.moodle-tool',
-    version='2.8.0',
-    info_plist={
-        'NSPrincipalClass': 'NSApplication',
-        'NSHighResolutionCapable': 'True',
-    },
-)
+# macOS App Bundle (nur auf macOS)
+if sys.platform == 'darwin':
+    app = BUNDLE(
+        exe,
+        name='MoodleTool.app',
+        icon='icon.icns',
+        bundle_identifier='at.htlpinkafeld.moodle-tool',
+        version='2.9.0',
+        info_plist={
+            'NSPrincipalClass': 'NSApplication',
+            'NSHighResolutionCapable': 'True',
+        },
+    )
