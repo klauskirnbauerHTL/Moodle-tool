@@ -29,6 +29,11 @@ Thumbs.db
 
 # Build artifacts
 *.app
-*.exe
 *.dmg
 *.zip
+
+# Behalte Icon-Dateien (Ausnahmen für Projekt-Icons)
+!icon.ico
+!icon.icns
+!icon.jpg
+!icon_*.png

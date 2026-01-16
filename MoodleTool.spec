@@ -50,13 +50,14 @@ exe = EXE(
     target_arch=None,
     codesign_identity=None,
     entitlements_file=None,
+    icon='icon.ico',  # Windows Icon
 )
 
 # macOS App Bundle
 app = BUNDLE(
     exe,
     name='MoodleTool.app',
-    icon=None,
+    icon='icon.icns',  # macOS Icon
     bundle_identifier='at.htlpinkafeld.moodle-tool',
     version='2.7.0',
     info_plist={

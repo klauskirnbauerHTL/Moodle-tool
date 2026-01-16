@@ -2,6 +2,7 @@ altgraph==0.17.5
 lxml==6.0.2
 macholib==1.16.4
 packaging==25.0
+pillow==12.1.0
 pyinstaller==6.18.0
 pyinstaller-hooks-contrib==2025.11
 PyQt6==6.10.2
