@@ -148,6 +148,14 @@ pyinstaller MoodleTool.spec
 
 ## 📝 Changelog
 
+### Version 2.8 (16. Januar 2026)
+- 🎨 **NEU**: Programm-Icons für alle Plattformen
+- 🪟 Windows Icon (.ico) mit mehreren Auflösungen
+- 🍎 macOS Icon (.icns) Bundle
+- 🖼️ PNG-Icons in verschiedenen Größen (16x16 bis 512x512)
+- 🛠️ Icon-Generator Script (create_icons.py) mit Pillow
+- ✨ Icons automatisch in Build-Pipeline integriert
+
 ### Version 2.7 (16. Januar 2026)
 - ✨ **NEU**: Frage duplizieren Funktion
 - 📋 Button und Menüoption (Ctrl+D) zum Duplizieren von Fragen

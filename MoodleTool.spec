@@ -59,7 +59,7 @@ app = BUNDLE(
     name='MoodleTool.app',
     icon='icon.icns',  # macOS Icon
     bundle_identifier='at.htlpinkafeld.moodle-tool',
-    version='2.7.0',
+    version='2.8.0',
     info_plist={
         'NSPrincipalClass': 'NSApplication',
         'NSHighResolutionCapable': 'True',
