@@ -11,7 +11,7 @@ import sqlite3
 
 from dialogs import QuestionDialog, SettingsDialog
 from exporter import export_to_moodle_xml, export_to_word
-from database import init_database_schema, get_questions_overview, import_moodle_xml
+from database import init_database_schema, get_questions_overview, import_moodle_xml, duplicate_question
 
 
 class MainWindow(QMainWindow):
@@ -72,6 +72,11 @@ class MainWindow(QMainWindow):
         refresh_btn.setMinimumHeight(45)
         refresh_btn.clicked.connect(self.refresh_table)
 
+        # DUPLIZIEREN BUTTON
+        duplicate_btn = QPushButton("📋 Frage duplizieren")
+        duplicate_btn.setMinimumHeight(45)
+        duplicate_btn.clicked.connect(self.duplicate_selected_question)
+
         # LÖSCHEN BUTTON
         delete_btn = QPushButton("🗑️ Ausgewählte löschen")
         delete_btn.setMinimumHeight(45)
@@ -88,6 +93,7 @@ class MainWindow(QMainWindow):
 
         button_layout.addWidget(new_btn)
         button_layout.addWidget(refresh_btn)
+        button_layout.addWidget(duplicate_btn)
         button_layout.addWidget(delete_btn)
         button_layout.addStretch()
         button_layout.addWidget(export_btn)
@@ -107,12 +113,18 @@ class MainWindow(QMainWindow):
         # Einstellungen
         settings_menu = menubar.addMenu("Einstellungen")
         settings_action = QAction("Datenbank...", self)
-        settings_action.setShortcut(QKeySequence("Ctrl+D"))
+        settings_action.setShortcut(QKeySequence("Ctrl+Shift+D"))
         settings_action.triggered.connect(self.show_settings)
         settings_menu.addAction(settings_action)
         
-        # LÖSCHEN im Menü
+        # BEARBEITEN-MENÜ
         delete_menu = menubar.addMenu("Bearbeiten")
+        
+        duplicate_action = QAction("📋 Frage duplizieren", self)
+        duplicate_action.setShortcut(QKeySequence("Ctrl+D"))
+        duplicate_action.triggered.connect(self.duplicate_selected_question)
+        delete_menu.addAction(duplicate_action)
+        
         delete_action = QAction("🗑️ Ausgewählte löschen", self)
         delete_action.setShortcut(QKeySequence("Ctrl+Delete"))
         delete_action.triggered.connect(self.delete_selected_questions)
@@ -124,6 +136,36 @@ class MainWindow(QMainWindow):
         import_action.setShortcut(QKeySequence("Ctrl+I"))
         import_action.triggered.connect(self.import_moodle_xml)
         import_menu.addAction(import_action)
+
+    def duplicate_selected_question(self):
+        """📋 Dupliziert die ausgewählte Frage inkl. aller Antworten"""
+        selected_rows = []
+        for i in range(self.table.rowCount()):
+            item = self.table.item(i, 0)
+            if item and self.table.item(i, 0).isSelected():
+                selected_rows.append(i)
+
+        if len(selected_rows) == 0:
+            QMessageBox.warning(self, "⚠️ Keine Auswahl", "Wähle genau eine Frage zum Duplizieren aus!")
+            return
+        
+        if len(selected_rows) > 1:
+            QMessageBox.warning(self, "⚠️ Zu viele Fragen", "Bitte wähle nur EINE Frage zum Duplizieren aus!")
+            return
+
+        question_id = int(self.table.item(selected_rows[0], 0).text())
+        title = self.table.item(selected_rows[0], 1).text()
+        
+        # Duplizieren
+        try:
+            new_qid = duplicate_question(self.db_path, question_id)
+            if new_qid:
+                QMessageBox.information(self, "✅ Dupliziert", f"Frage '{title}' wurde erfolgreich dupliziert!\nNeue ID: {new_qid}")
+                self.refresh_table()
+            else:
+                QMessageBox.critical(self, "❌ Fehler", "Frage konnte nicht gefunden werden!")
+        except Exception as e:
+            QMessageBox.critical(self, "❌ Fehler", f"Duplizierung fehlgeschlagen:\n{str(e)}")
 
     def delete_selected_questions(self):
         """🗑️ LÖSCHT markierte Fragen mit Sicherheitsabfrage"""

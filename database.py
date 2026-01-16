@@ -62,6 +62,39 @@ def save_question(db_path, title, questiontext, single, tags, points, answers):
     conn.close()
     return qid
 
+def duplicate_question(db_path, question_id):
+    """Dupliziert eine Frage inkl. aller Antworten"""
+    conn = sqlite3.connect(db_path)
+    c = conn.cursor()
+    
+    # Original-Frage laden
+    c.execute("SELECT title, questiontext, single, tags, points, question_type FROM questions WHERE id=?", (question_id,))
+    result = c.fetchone()
+    if not result:
+        conn.close()
+        return None
+    
+    title, questiontext, single, tags, points, question_type = result
+    # Titel mit "(Kopie)" markieren
+    new_title = f"{title} (Kopie)"
+    
+    # Neue Frage einfügen
+    c.execute("""INSERT INTO questions (title, questiontext, single, tags, points, question_type) 
+                VALUES (?, ?, ?, ?, ?, ?)""",
+             (new_title, questiontext, single, tags, points, question_type))
+    new_qid = c.lastrowid
+    
+    # Antworten kopieren
+    c.execute("SELECT answertext, is_correct FROM answers WHERE question_id=?", (question_id,))
+    answers = c.fetchall()
+    for answer_text, is_correct in answers:
+        c.execute("INSERT INTO answers (question_id, answertext, is_correct) VALUES (?, ?, ?)",
+                 (new_qid, answer_text, is_correct))
+    
+    conn.commit()
+    conn.close()
+    return new_qid
+
 def import_moodle_xml(db_path, xml_filename):
     """Importiert Moodle XML Fragen in die lokale DB"""
     try:
