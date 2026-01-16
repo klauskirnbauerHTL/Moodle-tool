@@ -71,7 +71,7 @@ if sys.platform == 'darwin':
         name='MoodleTool.app',
         icon='icon.icns',
         bundle_identifier='at.htlpinkafeld.moodle-tool',
-        version='2.9.0',
+        version='3.0.0',
         info_plist={
             'NSPrincipalClass': 'NSApplication',
             'NSHighResolutionCapable': 'True',

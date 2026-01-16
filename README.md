@@ -148,6 +148,13 @@ pyinstaller MoodleTool.spec
 
 ## 📝 Changelog
 
+### Version 3.0 (16. Januar 2026)
+- ✨ **NEU**: Verbesserter Datenbank-Start-Dialog
+- 📂 Klare Optionen: Bestehende öffnen oder Neue erstellen
+- 💾 SaveFileDialog für neue Datenbanken mit Standardnamen
+- ✅ Bestätigungsnachricht nach erfolgreicher DB-Erstellung
+- 🎯 Intuitivere Benutzerführung mit Emojis
+
 ### Version 2.9 (16. Januar 2026)
 - 🔧 **FIX**: Icon wird jetzt korrekt in macOS und Windows angezeigt
 - 💿 **NEU**: DMG-Installer für macOS mit Drag&Drop Installation
