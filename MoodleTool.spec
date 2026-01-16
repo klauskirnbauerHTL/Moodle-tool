@@ -58,7 +58,7 @@ app = BUNDLE(
     name='MoodleTool.app',
     icon=None,
     bundle_identifier='at.htlpinkafeld.moodle-tool',
-    version='1.0.0',
+    version='2.7.0',
     info_plist={
         'NSPrincipalClass': 'NSApplication',
         'NSHighResolutionCapable': 'True',

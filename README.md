@@ -148,6 +148,13 @@ pyinstaller MoodleTool.spec
 
 ## 📝 Changelog
 
+### Version 2.7 (16. Januar 2026)
+- ✨ **NEU**: Frage duplizieren Funktion
+- 📋 Button und Menüoption (Ctrl+D) zum Duplizieren von Fragen
+- 🔧 Automatische Markierung mit "(Kopie)" im Titel
+- 📦 Python Virtual Environment Setup mit requirements.txt
+- 📚 Dokumentation für Virtual Environment (README_VENV.md)
+
 ### Version 1.1.0 (18. Dezember 2025)
 - ✨ **NEU**: Word-Export Funktion mit 2-spaltigem Layout
 - 📄 Professionelle Word-Dokumente mit Checkboxen für Antworten
